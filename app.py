@@ -50,6 +50,20 @@ CAT_COLORS = ["#2e7d32", "#9ccc65", "#fdd835", "#fb8c00", "#e53935", "#6a1b9a"]
 SEASONS = ["Spring", "Summer", "Autumn", "Winter"]
 SITE_TYPES = ["Urban", "Suburban", "Regional Background"]
 SITE_TYPE_COLORS = {"Urban": "#e53935", "Suburban": "#fb8c00", "Regional Background": "#2e7d32"}
+STATION_COORDS = {
+    "Aotizhongxin": (39.982, 116.397),
+    "Changping": (40.217, 116.230),
+    "Dingling": (40.292, 116.220),
+    "Dongsi": (39.929, 116.417),
+    "Guanyuan": (39.929, 116.339),
+    "Gucheng": (39.914, 116.184),
+    "Huairou": (40.328, 116.628),
+    "Nongzhanguan": (39.937, 116.461),
+    "Shunyi": (40.127, 116.655),
+    "Tiantan": (39.886, 116.407),
+    "Wanliu": (39.987, 116.287),
+    "Wanshouxigong": (39.878, 116.352),
+}
 WEEKDAYS = [
     "Monday",
     "Tuesday",
@@ -132,6 +146,8 @@ with tab_over:
     by_station = (
         d.groupby(["station", "site_type"], as_index=False)[pol].mean().sort_values(pol)
     )
+    by_station["lat"] = by_station["station"].map(lambda s: STATION_COORDS[s][0])
+    by_station["lon"] = by_station["station"].map(lambda s: STATION_COORDS[s][1])
     days_over = (daily["PM2.5"] > 75).mean() * 100
     c1, c2, c3, c4 = st.columns(4)
     c1.metric(f"Mean {pol}", f"{d[pol].mean():.1f} {unit}")
@@ -181,27 +197,60 @@ with tab_over:
             "comparisons rather than calendar-year totals.)*"
         )
     with right:
-        fig = px.bar(
-            by_station,
-            x=pol,
-            y="station",
-            color="site_type",
-            orientation="h",
-            template="plotly_white",
-            category_orders={"site_type": SITE_TYPES},
-            color_discrete_map=SITE_TYPE_COLORS,
-            labels={pol: f"Mean {pol} ({unit})", "station": "", "site_type": "Site type"},
-        )
-        fig.update_layout(title=f"Mean {pol} by station", legend_title=None, height=380)
-        st.plotly_chart(fig, width="stretch")
-        st.caption(
-            "I used a **horizontal bar chart** ranked by concentration because it provides a clear, clean "
-            "way to compare all 12 stations without cramped axis labels. From this, we learn that western "
-            "and southern urban stations (like Gucheng and Wanshouxigong) experience the highest average "
-            "pollution, whereas the regional background site (Dingling) and northern suburban areas (like "
-            "Huairou) have the cleanest air. This reflects the intense spatial gradient in traffic, "
-            "industry, and population density across Beijing."
-        )
+        view = st.radio("Display stations as", ["Map", "Bar chart"], horizontal=True)
+        if view == "Map":
+            fig = px.scatter_mapbox(
+                by_station,
+                lat="lat",
+                lon="lon",
+                hover_name="station",
+                hover_data={"site_type": True, pol: ":.1f", "lat": False, "lon": False},
+                color="site_type",
+                color_discrete_map=SITE_TYPE_COLORS,
+                category_orders={"site_type": SITE_TYPES},
+                size=pol,
+                size_max=20,
+                zoom=8.3,
+                center={"lat": 40.08, "lon": 116.40},
+                mapbox_style="carto-positron",
+                labels={pol: f"Mean {pol} ({unit})", "site_type": "Site type"},
+            )
+            fig.update_layout(
+                title=f"Monitoring stations (size = {pol})",
+                legend_title=None,
+                height=380,
+                margin=dict(l=0, r=0, t=40, b=0),
+            )
+            st.plotly_chart(fig, width="stretch")
+            st.caption(
+                "I used an **interactive geographic map** with marker sizes scaled to pollutant concentration "
+                "because air quality is strongly governed by local topography and urban density. From this, we "
+                "learn that the highest pollution concentrates in the southern and western urban stations (like "
+                "Gucheng and Wanshouxigong), while northern suburban and regional background stations (like "
+                "Huairou and Dingling) stay noticeably cleaner near the sheltering mountain ranges."
+            )
+        else:
+            fig = px.bar(
+                by_station,
+                x=pol,
+                y="station",
+                color="site_type",
+                orientation="h",
+                template="plotly_white",
+                category_orders={"site_type": SITE_TYPES},
+                color_discrete_map=SITE_TYPE_COLORS,
+                labels={pol: f"Mean {pol} ({unit})", "station": "", "site_type": "Site type"},
+            )
+            fig.update_layout(title=f"Mean {pol} by station", legend_title=None, height=380)
+            st.plotly_chart(fig, width="stretch")
+            st.caption(
+                "I used a **horizontal bar chart** ranked by concentration because it provides a clear, clean "
+                "way to compare all 12 stations without cramped axis labels. From this, we learn that western "
+                "and southern urban stations (like Gucheng and Wanshouxigong) experience the highest average "
+                "pollution, whereas the regional background site (Dingling) and northern suburban areas (like "
+                "Huairou) have the cleanest air. This reflects the intense spatial gradient in traffic, "
+                "industry, and population density across Beijing."
+            )
 
 # ---------------------------------------------------------------- patterns
 with tab_pat:
