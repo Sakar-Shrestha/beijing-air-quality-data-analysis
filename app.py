@@ -188,13 +188,9 @@ with tab_over:
         fig.update_layout(title=f"Monthly mean {pol}", legend_title=None, height=380)
         st.plotly_chart(fig, width="stretch")
         st.caption(
-            "I used a **line chart** here because tracking continuous monthly averages over time makes "
-            "long-term cyclical trends and seasonal spikes obvious at a glance. From this, we learn that "
-            "pollution repeatedly surges to dangerous levels every winter and drops significantly in summer. "
-            "It also reveals that urban stations face consistently higher baseline pollution than suburban "
-            "areas, while the regional background station (Dingling) stays noticeably lower year-round. "
-            "*(Note: because 2013 and 2017 are partial years, I focused on month-by-month and seasonal "
-            "comparisons rather than calendar-year totals.)*"
+            "We can see that pollution repeatedly surges every winter and drops significantly in summer. "
+            "Urban stations maintain higher baseline pollution than suburban areas, while the regional "
+            "background site (Dingling) stays consistently lowest year-round."
         )
     with right:
         view = st.radio("Display stations as", ["Map", "Bar chart"], horizontal=True)
@@ -223,11 +219,9 @@ with tab_over:
             )
             st.plotly_chart(fig, width="stretch")
             st.caption(
-                "I used an **interactive geographic map** with marker sizes scaled to pollutant concentration "
-                "because air quality is strongly governed by local topography and urban density. From this, we "
-                "learn that the highest pollution concentrates in the southern and western urban stations (like "
-                "Gucheng and Wanshouxigong), while northern suburban and regional background stations (like "
-                "Huairou and Dingling) stay noticeably cleaner near the sheltering mountain ranges."
+                "We can see that pollution is concentrated in the southern and western urban core (like "
+                "Gucheng and Wanshouxigong), while northern suburban and background stations (like Huairou "
+                "and Dingling) stay noticeably cleaner near the mountains."
             )
         else:
             fig = px.bar(
@@ -244,12 +238,9 @@ with tab_over:
             fig.update_layout(title=f"Mean {pol} by station", legend_title=None, height=380)
             st.plotly_chart(fig, width="stretch")
             st.caption(
-                "I used a **horizontal bar chart** ranked by concentration because it provides a clear, clean "
-                "way to compare all 12 stations without cramped axis labels. From this, we learn that western "
-                "and southern urban stations (like Gucheng and Wanshouxigong) experience the highest average "
-                "pollution, whereas the regional background site (Dingling) and northern suburban areas (like "
-                "Huairou) have the cleanest air. This reflects the intense spatial gradient in traffic, "
-                "industry, and population density across Beijing."
+                "We can see that southern and western urban stations (like Gucheng and Wanshouxigong) "
+                "average the highest pollution, while northern suburban and background stations (Huairou, "
+                "Dingling) have the cleanest air."
             )
 
 # ---------------------------------------------------------------- patterns
@@ -265,12 +256,9 @@ with tab_pat:
     fig.update_layout(title=f"Mean {pol} by month and hour", height=420)
     st.plotly_chart(fig, width="stretch")
     st.caption(
-        "I used a **2D heatmap** because it can compress two distinct cyclical time dimensions (the 12 "
-        "months and the 24 hours of the day) into a single visual view, using colour intensity to expose "
-        "hot spots. From this, we learn that extreme pollution events concentrate heavily in late evenings "
-        "and early mornings (21:00 to 08:00) during the winter months (November to February). This peak "
-        "occurs because domestic heating emissions increase right when cold night air creates temperature "
-        "inversions that trap pollutants near ground level."
+        "We can see that extreme pollution concentrates heavily during late evenings and early mornings "
+        "(21:00 to 08:00) in winter (November to February), when heating emissions surge and cold night "
+        "air traps pollutants near ground level."
     )
 
     sm = d.groupby("season")[pol].mean()
@@ -295,12 +283,8 @@ with tab_pat:
         fig.update_layout(title="Daily cycle by season", legend_title=None, height=340)
         st.plotly_chart(fig, width="stretch")
         st.caption(
-            "I used a **multi-line chart** to overlay the 24-hour diurnal cycle for all four seasons on the "
-            "same axes so their shapes and amplitudes can be compared directly. From this, we learn that all "
-            "seasons share a midday dip (around 12:00 to 16:00) when solar heating creates convective mixing "
-            "that disperses pollutants, followed by a sharp evening rise. Crucially, we also learn that "
-            "the winter baseline is dramatically higher at every single hour of the day compared to any "
-            "other season."
+            "We can see that all seasons experience a midday dip around 12:00 to 16:00 as daytime heating "
+            "disperses pollutants, followed by an evening rise. Winter pollution stays much higher at every single hour."
         )
     with b:
         wk = d.groupby("weekday")[pol].mean().reindex(WEEKDAYS).reset_index()
@@ -314,11 +298,8 @@ with tab_pat:
         fig.update_layout(title="Mean by day of week", height=340)
         st.plotly_chart(fig, width="stretch")
         st.caption(
-            "I used a **bar chart** because the days of the week are discrete categorical variables, making "
-            "it easy to evaluate differences between weekdays and weekends. From this, we learn that the "
-            "day-of-week effect is very modest (averages hover between ~73 µg/m³ on Mondays and ~87 µg/m³ "
-            "on Saturdays). This shows that weekly commuter traffic cycles have far less impact on overall "
-            "pollution levels than broad seasonal heating demands and regional weather systems."
+            "We can see that differences across weekdays and weekends are very small (averaging ~73 to ~87 µg/m³), "
+            "showing that weekly commuter cycles matter far less than seasonal heating and regional weather."
         )
 
 # ---------------------------------------------------------------- drivers
@@ -340,14 +321,9 @@ with tab_drv:
     )
     st.plotly_chart(fig, width="stretch")
     st.caption(
-        "I used a **correlation heatmap** with numeric annotations because it summarizes all pairwise "
-        "relationships between pollutants and meteorological variables in a single view. I chose "
-        "**Spearman rank correlation** because pollutant concentrations are heavily right-skewed with extreme "
-        "outliers, and I aggregated data into daily values to avoid hour-to-hour autocorrelation. From this, "
-        "we learn that primary combustion pollutants (PM2.5, PM10, CO, SO2, and NO2) strongly co-move "
-        "(r > 0.6–0.8), confirming common sources such as fossil fuel burning. Conversely, ozone (O3) shows "
-        "an inverse correlation with NO2 due to photochemical titration, and wind speed (WSPM) shows a "
-        "consistent negative relationship with particulate matter, confirming the role of wind in dispersing haze."
+        "We can see that combustion pollutants (PM2.5, PM10, CO, SO2, NO2) strongly co-move (r > 0.6–0.8) "
+        "from shared fossil fuel sources. Wind speed (WSPM) consistently helps disperse particulates, while "
+        "ozone moves inversely with NO2."
     )
 
     drv = st.selectbox(
@@ -396,12 +372,8 @@ with tab_drv:
     )
     st.plotly_chart(fig, width="stretch")
     st.caption(
-        "I used a **band chart** (plotting the median line with an interquartile range across 12 "
-        "equal-frequency bins) because standard scatter plots become an unreadable blur with over 400,000 "
-        "points. From this, we learn how pollution levels respond non-linearly to specific weather conditions: "
-        "for example, as wind speed increases from calm to over 4 m/s, median PM2.5 drops sharply from "
-        "~79 µg/m³ to ~22 µg/m³. The narrowing IQR band also shows that severe haze episodes are effectively "
-        "suppressed once winds pick up."
+        "I used a **band chart** (median with a 25th–75th percentile range) because plotting 400,000+ points "
+        "creates an unreadable blur. We can see that higher wind speed sharply reduces pollution and suppresses extreme haze."
     )
     if drv == "WSPM" and len(g) > 1:
         st.info(
@@ -438,13 +410,9 @@ with tab_drv:
         )
         col.plotly_chart(fig, width="stretch")
     st.caption(
-        "I used two **polar wind rose charts** side by side because polar coordinates naturally reflect "
-        "physical 360° compass directions. Displaying average concentration on the left and wind frequency "
-        "on the right lets us contrast pollution intensity against prevailing wind patterns. From reading "
-        "them together, we learn that while clean winds blow most frequently from the northwest (originating "
-        "over the mountains), the most severe pollution arrives with slower winds from the south and "
-        "south-southwest (S, SSW). These southerly winds transport regional industrial emissions from "
-        "neighbouring provinces straight into the Beijing basin, where the northern mountains block dispersion."
+        "I used **polar wind rose charts** because 360° polar coordinates naturally represent compass directions. "
+        "We can see that while clean winds blow most often from the northwest mountains, the worst pollution arrives "
+        "with slower winds from the south, trapping regional industrial emissions against the northern mountains."
     )
 
 # ---------------------------------------------------------------- standards
@@ -481,12 +449,9 @@ with tab_std:
     )
     st.plotly_chart(fig, width="stretch")
     st.caption(
-        "I used a **grouped bar chart** so that multiple public health benchmarks could be evaluated "
-        "side by side across all 12 monitoring stations. From this, we learn that chronic exposure in Beijing "
-        "was remarkably severe during this period: every station exceeded the strict WHO 2021 daily guideline "
-        "(15 µg/m³) on over 85% to 95% of all days. Furthermore, around 35% to 45% of days also violated "
-        "China's own Class 2 standard (75 µg/m³), underscoring the huge gap between local air quality and "
-        "international health targets."
+        "We can see that air pollution was chronically severe across all 12 stations: every station exceeded "
+        "the WHO 2021 daily guideline (15 µg/m³) on over 85% to 95% of days, and violated China's Class 2 limit "
+        "(75 µg/m³) on 35% to 45% of days."
     )
 
     cat = d.dropna(subset=["pm25_category"])
@@ -517,12 +482,8 @@ with tab_std:
     )
     st.plotly_chart(fig, width="stretch")
     st.caption(
-        "I used a **100% stacked bar chart** because it allows us to compare the relative proportion of each "
-        "air quality grade across seasons, stations, or site types without being distorted by sample size. "
-        "From this, we learn that poor air quality is heavily concentrated in winter, where 'Heavy' and "
-        "'Severe' categories make up over 30% of all hours, whereas summer is dominated by 'Good' and "
-        "'Excellent' air. *(Note: because China's HJ 633-2012 AQI grades are legally defined for 24-hour "
-        "exposures, I calculated them using a rolling 24-hour mean per station rather than single hourly spikes.)*"
+        "We can see that poor air quality is heavily concentrated in winter, where 'Heavy' and 'Severe' grades "
+        "account for over 30% of all hours, whereas summer is dominated by 'Good' and 'Excellent' air."
     )
 
 # ---------------------------------------------------------------- data quality
@@ -541,12 +502,9 @@ with tab_dq:
         fig.update_layout(title="Missing values before and after cleaning", height=360)
         st.plotly_chart(fig, width="stretch")
         st.caption(
-            "I used a **grouped before-and-after bar chart** to visually audit the impact of my cleaning "
-            "pipeline on each individual feature. From this, we learn that missing data was largely limited "
-            "to gas sensors like CO (~20,700 missing values, or 4.9%) and O3 (~13,300, or 3.2%), whereas "
-            "weather sensors were nearly 100% complete (<0.1% missing). The zero 'after' bars show that my "
-            "hybrid imputation strategy (linear interpolation for short gaps <=6 hours and station-month-hour "
-            "median matching for larger gaps) successfully resolved all missing values without discarding rows."
+            "We can see that missing data was largely limited to gas sensors like CO (4.9%) and O3 (3.2%), "
+            "while weather sensors were nearly complete. The zero 'after' bars confirm that our hybrid interpolation "
+            "and median imputation filled all gaps without dropping rows."
         )
     except Exception:
         st.info("Missing report CSV not found.")
