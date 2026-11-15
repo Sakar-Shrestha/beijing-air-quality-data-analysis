@@ -215,7 +215,7 @@ with tab_over:
                 title=f"Monitoring stations (size = {pol})",
                 legend_title=None,
                 height=380,
-                margin=dict(l=0, r=0, t=40, b=0),
+                margin={"l": 0, "r": 0, "t": 40, "b": 0},
             )
             st.plotly_chart(fig, width="stretch")
             st.caption(
@@ -251,7 +251,7 @@ with tab_pat:
         aspect="auto",
         color_continuous_scale="YlOrRd",
         template="plotly_white",
-        labels=dict(x="Hour of day", y="Month", color=f"{pol}"),
+        labels={"x": "Hour of day", "y": "Month", "color": f"{pol}"},
     )
     fig.update_layout(title=f"Mean {pol} by month and hour", height=420)
     st.plotly_chart(fig, width="stretch")
@@ -341,7 +341,7 @@ with tab_drv:
     fig = go.Figure()
     fig.add_trace(
         go.Scatter(
-            x=g["x"], y=g["q3"], line=dict(width=0), showlegend=False, hoverinfo="skip"
+            x=g["x"], y=g["q3"], line={"width": 0}, showlegend=False, hoverinfo="skip"
         )
     )
     fig.add_trace(
@@ -349,9 +349,9 @@ with tab_drv:
             x=g["x"],
             y=g["q1"],
             fill="tonexty",
-            line=dict(width=0),
+            line={"width": 0},
             fillcolor="rgba(230,120,40,0.25)",
-            name="25th–75th percentile",
+            name="25th-75th percentile",
         )
     )
     fig.add_trace(
@@ -360,7 +360,7 @@ with tab_drv:
             y=g["med"],
             mode="lines+markers",
             name="Median",
-            line=dict(color="#d84315"),
+            line={"color": "#d84315"},
         )
     )
     fig.update_layout(
@@ -489,25 +489,24 @@ with tab_std:
 # ---------------------------------------------------------------- data quality
 with tab_dq:
     st.subheader("Preprocessing summary")
-    try:
-        rep = pd.read_csv(MISSING_REPORT_PATH)
-        fig = px.bar(
-            rep.sort_values("before", ascending=False),
-            x="column",
-            y=["before", "after"],
-            barmode="group",
-            template="plotly_white",
-            labels={"value": "Missing values", "variable": ""},
-        )
-        fig.update_layout(title="Missing values before and after cleaning", height=360)
-        st.plotly_chart(fig, width="stretch")
-        st.caption(
-            "We can see that missing data was largely limited to gas sensors like CO (4.9%) and O3 (3.2%), "
-            "while weather sensors were nearly complete. The zero 'after' bars confirm that our hybrid interpolation "
-            "and median imputation filled all gaps without dropping rows."
-        )
-    except Exception:
-        st.info("Missing report CSV not found.")
+    
+    rep = pd.read_csv(MISSING_REPORT_PATH)
+    fig = px.bar(
+        rep.sort_values("before", ascending=False),
+        x="column",
+        y=["before", "after"],
+        barmode="group",
+        template="plotly_white",
+        labels={"value": "Missing values", "variable": ""},
+    )
+    fig.update_layout(title="Missing values before and after cleaning", height=360)
+    st.plotly_chart(fig, width="stretch")
+    st.caption(
+        "We can see that missing data was largely limited to gas sensors like CO (4.9%) and O3 (3.2%), "
+        "while weather sensors were nearly complete. The zero 'after' bars confirm that our hybrid interpolation "
+        "and median imputation filled all gaps without dropping rows."
+    )
+    
     q = full.groupby("station").agg(
         rows=("station", "size"),
         imputed_rows_pct=("imputed_any", "mean"),
