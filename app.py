@@ -199,42 +199,29 @@ with tab_over:
     with right:
         view = st.radio("Display stations as", ["Map", "Bar chart"], horizontal=True)
         if view == "Map":
-            try:
-                map_kw = (
-                    {"map_style": "carto-positron"}
-                    if hasattr(px, "scatter_map")
-                    else {"mapbox_style": "carto-positron"}
-                )
-                plot_map = getattr(px, "scatter_map", getattr(px, "scatter_mapbox", None))
-                if plot_map is not None:
-                    fig = plot_map(
-                        by_station,
-                        lat="lat",
-                        lon="lon",
-                        hover_name="station",
-                        hover_data={"site_type": True, pol: ":.1f", "lat": False, "lon": False},
-                        color="site_type",
-                        color_discrete_map=SITE_TYPE_COLORS,
-                        category_orders={"site_type": SITE_TYPES},
-                        size=pol,
-                        size_max=20,
-                        zoom=8.3,
-                        center={"lat": 40.08, "lon": 116.40},
-                        labels={pol: f"Mean {pol} ({unit})", "site_type": "Site type"},
-                        **map_kw,
-                    )
-                    fig.update_layout(
-                        title=f"Monitoring stations (size = {pol})",
-                        legend_title=None,
-                        height=380,
-                        margin=dict(l=0, r=0, t=40, b=0),
-                    )
-                    st.plotly_chart(fig, width="stretch")
-                else:
-                    raise AttributeError("No Plotly map function available")
-            except Exception:
-                by_station["site_color"] = by_station["site_type"].map(SITE_TYPE_COLORS)
-                st.map(by_station, latitude="lat", longitude="lon", color="site_color", size=pol)
+            fig = px.scatter_map(
+                by_station,
+                lat="lat",
+                lon="lon",
+                hover_name="station",
+                hover_data={"site_type": True, pol: ":.1f", "lat": False, "lon": False},
+                color="site_type",
+                color_discrete_map=SITE_TYPE_COLORS,
+                category_orders={"site_type": SITE_TYPES},
+                size=pol,
+                size_max=20,
+                zoom=8.3,
+                center={"lat": 40.08, "lon": 116.40},
+                map_style="carto-positron",
+                labels={pol: f"Mean {pol} ({unit})", "site_type": "Site type"},
+            )
+            fig.update_layout(
+                title=f"Monitoring stations (size = {pol})",
+                legend_title=None,
+                height=380,
+                margin=dict(l=0, r=0, t=40, b=0),
+            )
+            st.plotly_chart(fig, width="stretch")
             st.caption(
                 "I used an **interactive geographic map** with marker sizes scaled to pollutant concentration "
                 "because air quality is strongly governed by local topography and urban density. From this, we "
