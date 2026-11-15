@@ -165,8 +165,11 @@ with tab_over:
         fig.update_layout(title=f"Monthly mean {pol}", legend_title=None, height=380)
         st.plotly_chart(fig, width="stretch")
         st.caption(
-            "The first and last year are partial (data starts in March 2013 and ends in February 2017), "
-            "so compare months and seasons rather than calendar-year totals."
+            "A **line chart** is used here because it shows how the monthly average changes over time and "
+            "makes seasonal peaks easy to spot. From this we can see a clear repeating winter spike in "
+            "PM2.5 each year, with urban stations consistently higher than suburban/rural ones. "
+            "Note: the first and last years are partial (Mar 2013 and Feb 2017), so compare months and "
+            "seasons rather than calendar-year totals."
         )
     with right:
         fig = px.bar(
@@ -181,7 +184,11 @@ with tab_over:
         fig.update_layout(title=f"Mean {pol} by station", legend_title=None, height=380)
         st.plotly_chart(fig, width="stretch")
         st.caption(
-            "Site type is an assumed grouping by station location, see Data quality tab."
+            "A **horizontal bar chart** is used to rank all 12 stations side by side, making it "
+            "easy to compare magnitudes at a glance. From this we can see that inner-city (urban) "
+            "stations like Gucheng consistently record higher pollution than suburban/rural stations "
+            "like Dingling. Site type is an assumed grouping based on station location — see the "
+            "Data quality tab for details."
         )
 
 # ---------------------------------------------------------------- patterns
@@ -196,6 +203,12 @@ with tab_pat:
     )
     fig.update_layout(title=f"Mean {pol} by month and hour", height=420)
     st.plotly_chart(fig, width="stretch")
+    st.caption(
+        "A **heatmap** is used because it can display two time dimensions (month and hour) simultaneously, "
+        "with colour intensity showing concentration. From this we learn that the highest pollution occurs "
+        "during winter nights and early mornings (around 22:00–08:00 in Dec–Feb), likely driven by heating "
+        "emissions trapped under stable nighttime boundary layers."
+    )
 
     sm = d.groupby("season")[pol].mean()
     if {"Winter", "Summer"} <= set(sm.index):
@@ -218,6 +231,12 @@ with tab_pat:
         )
         fig.update_layout(title="Daily cycle by season", legend_title=None, height=340)
         st.plotly_chart(fig, width="stretch")
+        st.caption(
+            "A **multi-line chart** is used to overlay the 24-hour cycle for each season on the same axes, "
+            "making the shape and level of daily variation directly comparable. From this we learn that all "
+            "seasons show a midday dip (when convective mixing disperses pollutants) and a late-evening rise, "
+            "but winter concentrations are consistently higher across all hours."
+        )
     with b:
         wk = d.groupby("weekday")[pol].mean().reindex(WEEKDAYS).reset_index()
         fig = px.bar(
@@ -229,10 +248,12 @@ with tab_pat:
         )
         fig.update_layout(title="Mean by day of week", height=340)
         st.plotly_chart(fig, width="stretch")
-    st.caption(
-        "Heatmap and daily cycles show when pollution peaks; the weekday bars show whether traffic-related "
-        "weekly rhythms matter. Compare the size of weekday differences with the seasonal ones above."
-    )
+        st.caption(
+            "A **bar chart** is used for weekday means because each day is a discrete category, and bars "
+            "make small differences in height easy to judge. From this we learn that the weekday effect is "
+            "small compared to the seasonal differences shown above, suggesting that traffic-related weekly "
+            "patterns play a minor role relative to meteorology and heating demand."
+        )
 
 # ---------------------------------------------------------------- drivers
 with tab_drv:
@@ -253,9 +274,15 @@ with tab_drv:
     )
     st.plotly_chart(fig, width="stretch")
     st.caption(
-        "Spearman is used because pollutant distributions are strongly right-skewed. Daily values reduce "
-        "hour-to-hour autocorrelation. Correlation is not causation: temperature and dew point partly "
-        "proxy for season (heating) and humidity."
+        "A **correlation heatmap** with annotated coefficients is used because it reveals the strength and "
+        "direction of pairwise relationships across all pollutants and weather variables at once. Spearman "
+        "rank correlation is chosen over Pearson because pollutant distributions are strongly right-skewed, "
+        "and daily averages are used to reduce hour-to-hour autocorrelation. From this we learn that PM2.5, "
+        "PM10, SO2, NO2 and CO are all positively correlated (they share emission sources), while O3 is "
+        "negatively correlated with the other pollutants (it is consumed by NO₂ in urban photochemistry). "
+        "WSPM (wind speed) shows a negative correlation with most pollutants, confirming that wind disperses "
+        "pollution. Note: correlation is not causation — temperature and dew point partly proxy for season "
+        "(heating demand) and humidity."
     )
 
     drv = st.selectbox(
@@ -303,6 +330,11 @@ with tab_drv:
         yaxis_title=f"{pol} ({unit})",
     )
     st.plotly_chart(fig, width="stretch")
+    st.caption(
+        "A **band chart** (median line with a shaded interquartile range) is used because it shows both the "
+        "central trend and the spread of pollution across equal-count bins of the weather variable. This "
+        "reveals whether the relationship is monotonic and how much variability exists at each level."
+    )
     if drv == "WSPM" and len(g) > 1:
         st.info(
             f"Median {pol} falls from {g['med'].iloc[0]:.0f} in the calmest bin to "
@@ -320,26 +352,31 @@ with tab_drv:
             go.Barpolar(
                 r=vals.values,
                 theta=COMPASS,
-                marker=dict(color=vals.values, colorscale=scale),
+                marker={"color": vals.values, "colorscale": scale},
             )
         )
         fig.update_layout(
             template="plotly_white",
             title=ttl,
             height=400,
-            polar=dict(
-                angularaxis=dict(
-                    type="category",
-                    direction="clockwise",
-                    rotation=90,
-                    categoryarray=COMPASS,
-                )
-            ),
+            polar={
+                "angularaxis": {
+                    "type": "category",
+                    "direction": "clockwise",
+                    "rotation": 90,
+                    "categoryarray": COMPASS,
+                }
+            },
         )
         col.plotly_chart(fig, width="stretch")
     st.caption(
-        "Wind direction is the direction the wind comes from. Read the two roses together: the worst "
-        "directions for air quality are not necessarily the most frequent."
+        "**Polar bar charts (wind roses)** are used because they naturally map compass directions to angular "
+        "position, making directional patterns intuitive. The left rose shows mean concentration by wind "
+        "direction and the right shows how frequently wind blows from each direction. From reading them "
+        "together we learn that the highest PM2.5 arrives on southerly winds (S, SSW), which carry polluted "
+        "air from industrialised areas south of Beijing, while the most frequent winds blow from the "
+        "northwest, bringing cleaner air from the mountains. Wind direction here means the direction the "
+        "wind comes from."
     )
 
 # ---------------------------------------------------------------- standards
@@ -376,8 +413,12 @@ with tab_std:
     )
     st.plotly_chart(fig, width="stretch")
     st.caption(
-        "Limits are 24-hour PM2.5 means in µg/m³: WHO 2021 guideline 15; China GB 3095-2012 Class 1 = 35 "
-        "and Class 2 = 75. Compare each bar with the tighter WHO guideline."
+        "A **grouped bar chart** is used so that the three regulatory thresholds can be compared side by "
+        "side for each station. From this we learn that nearly all stations exceed the WHO 2021 guideline "
+        "(15 µg/m³) on over 90% of days, while roughly 40% of days exceed China's Class 2 limit "
+        "(75 µg/m³). The gap between the WHO bar and the China bars highlights how much stricter the WHO "
+        "standard is. Limits shown are 24-hour PM2.5 means: WHO 2021 = 15, China GB 3095-2012 Class 1 = "
+        "35, Class 2 = 75 µg/m³."
     )
 
     cat = d.dropna(subset=["pm25_category"])
@@ -408,6 +449,9 @@ with tab_std:
     )
     st.plotly_chart(fig, width="stretch")
     st.caption(
+        "A **stacked bar chart** is used because it shows both the overall distribution and the share of "
+        "each air-quality grade as a proportion of the whole. From this we learn that winter has the "
+        "largest share of Heavy and Severe hours, while summer is dominated by Excellent and Good grades. "
         "Grades follow China's HJ 633-2012 PM2.5 breakpoints (35/75/115/150/250 µg/m³), which are defined "
         "on 24-hour averages, so they are applied to a rolling 24 h mean rather than single hours."
     )
@@ -428,6 +472,12 @@ with tab_dq:
         )
         fig.update_layout(title="Missing values before and after cleaning", height=360)
         st.plotly_chart(fig, width="stretch")
+        st.caption(
+            "A **grouped bar chart** is used to compare missing-value counts before and after cleaning for "
+            "each variable. From this we can see that CO had the most missing values (~20,700, about 4.9%), "
+            "followed by O3 and NO2, while weather variables had very few gaps. After cleaning, all columns "
+            "have zero missing values."
+        )
     q = full.groupby("station").agg(
         rows=("station", "size"),
         imputed_rows_pct=("imputed_any", "mean"),
@@ -437,7 +487,7 @@ with tab_dq:
     q[["imputed_rows_pct", "pm25_gt_pm10_pct", "pm25_above_500_pct"]] *= 100
     st.dataframe(q.round(2), width="stretch")
     st.markdown("""
-**Method.** Stations combined into one table (12 × 35,064 hourly rows) and a datetime built from year, month, day, hour.
+**Method.** Stations combined into one table (12 x 35,064 hourly rows) and a datetime built from year, month, day, hour.
 Gaps of up to 6 hours were linearly interpolated within each station; longer gaps were filled with the median for the same
 station, month and hour; wind direction was forward-filled then set to the station-month mode.
 Rows with PM2.5 above PM10 or PM2.5 above 500 µg/m³ were **flagged, not removed**: the first can be an instrument artefact,
